@@ -1,15 +1,15 @@
 import { describe } from 'mocha';
 import { expect } from 'chai';
 import { ethers } from 'hardhat'
-import { Collection } from "../typechain-types";
+import { Dwin } from "../typechain-types";
 
 describe("Greeter", function () {
-    let contract: Collection;
+    let contract: Dwin;
   
     beforeEach(async () => {
-      const Collection = await ethers.getContractFactory("Collection");
+      const Dwin = await ethers.getContractFactory("Dwin");
       const [deployer] = await ethers.getSigners()
-      contract = await Collection.connect(deployer).deploy();
+      contract = await Dwin.connect(deployer).deploy();
     });
   
     describe("deploy", () => {
