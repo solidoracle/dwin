@@ -20,7 +20,5 @@ export type { ERC165 } from "./@openzeppelin/contracts/utils/introspection/ERC16
 export { ERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/ERC165__factory";
 export type { IERC165 } from "./@openzeppelin/contracts/utils/introspection/IERC165";
 export { IERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/IERC165__factory";
-export type { Collection } from "./contracts/Collection";
-export { Collection__factory } from "./factories/contracts/Collection__factory";
 export type { Dwin } from "./contracts/Dwin";
 export { Dwin__factory } from "./factories/contracts/Dwin__factory";

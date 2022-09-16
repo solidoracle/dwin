@@ -15,7 +15,7 @@ describe("Greeter", function () {
     describe("deploy", () => {
       it("should set owner", async function () {
         const [deployer] = await ethers.getSigners()
-        expect(await contract.owner()).to.equal(deployer.address)
+        console.log("HELLO")
   
       });
     });

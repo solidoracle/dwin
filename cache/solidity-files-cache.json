@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/solidoracle/Documents/Web3/Personal Projects/dwinv1/contracts/Dwin.sol": {
-      "lastModificationDate": 1663362657802,
-      "contentHash": "d50e3520c1dc4978bc7177eb5a7c50c4",
+      "lastModificationDate": 1663363047115,
+      "contentHash": "24b8d2269b3af6d5b1c2714c72a10bb3",
       "sourceName": "contracts/Dwin.sol",
       "solcConfig": {
         "version": "0.8.13",
