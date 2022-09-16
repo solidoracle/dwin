@@ -30,9 +30,7 @@ contract Dwin is ERC1155, Ownable {
         Vote outcome;
     }
 
-    constructor() ERC1155("DWIN"){
-        
-    }
+    constructor() ERC1155("DWIN"){}
 
     function createProposal(string memory _description) public returns (uint256) {
         Proposal storage proposal = proposals[numProposals];
