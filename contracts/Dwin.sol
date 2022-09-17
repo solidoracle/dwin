@@ -76,11 +76,10 @@ contract Dwin is ERC1155, Ownable {
         require(block.timestamp > proposal.deadline,"Voting still in process")
         Vote outcomeWon;
         if (proposal.yayVotes > proposal.nayVotes) {
-            outcomeWon = Vote.YAY;
+            proposal.outcome = Vote.YAY; // vote passed is yes
         } else { 
-            outcomeWon = Vote.NAY; 
+            proposal.outcome = Vote.NAY; // vote passed is no
         }
-        proposal.outcome = outcomeWon;
     }
 
 
@@ -124,4 +123,4 @@ contract Dwin is ERC1155, Ownable {
         return proposals[proposalId].totalNetBets;
     }
 }
-    
+
