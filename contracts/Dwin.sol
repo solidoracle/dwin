@@ -4,9 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
-///TODO: timeframe modifiers
-// .nvm file for package management
-
 contract Dwin is ERC1155, Ownable {
  
     // Create a mapping of ID to Proposal
@@ -51,13 +48,10 @@ contract Dwin is ERC1155, Ownable {
 
     function makeBet(uint256 _proposalId, Vote bet) public payable {
         require(bet != Vote.NONE);
-        Proposal storage proposal = proposals[_proposalId];
         
-        // uint256 tokenId = _proposalId * 2 - (uint(bet) == 0 ? 1 : 0); 
+        Proposal storage proposal = proposals[_proposalId];
         uint256 tokenId = _proposalId * 2 - uint(bet);
         proposal.totalNetBets[uint(bet)] += msg.value;
-
-        // seems werid with wei
         super._mint(msg.sender, tokenId, msg.value, "");
     }
 
@@ -74,13 +68,12 @@ contract Dwin is ERC1155, Ownable {
 
     function executeProposal(uint256 _proposalId) external onlyOwner {
         Proposal storage proposal = proposals[_proposalId];
-        Vote outcomeWon;
+
         if (proposal.yayVotes > proposal.nayVotes) {
-            outcomeWon = Vote.YAY; // vote passed is yes
+            proposal.outcome = Vote.YAY; // vote passed is yes
         } else { 
-            outcomeWon = Vote.NAY; // vote passed is no
+            proposal.outcome = Vote.NAY; // vote passed is no
         }
-        proposal.outcome = outcomeWon;
     }
 
 
@@ -125,4 +118,4 @@ contract Dwin is ERC1155, Ownable {
         return proposals[proposalId].totalNetBets;
     }
 }
-    
+
