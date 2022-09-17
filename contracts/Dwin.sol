@@ -4,18 +4,23 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
+    /**
+     * @title dwin
+     * @notice An ERC1155 contract that generates a betting market for DAO voting
+     */
+
 contract Dwin is ERC1155, Ownable {
  
-    // Create a mapping of ID to Proposal
-    mapping(uint256 => Proposal) public proposals;
-    // Number of proposals that have been created
-    uint256 public numProposals = 1;
     uint256 public treasury;
+    uint256 public numProposals = 1;
+    mapping(uint256 => Proposal) public proposals;
 
+    event ProposalCreated(uint256 proposalId, string _description);
+    
     enum Vote {
-        YAY, // 0
-        NAY, // 1
-        NONE // 2
+        YAY, 
+        NAY, 
+        NONE 
     }
 
     struct Proposal {
@@ -31,8 +36,6 @@ contract Dwin is ERC1155, Ownable {
     }
 
     constructor() ERC1155("DWIN"){}
-
-    event ProposalCreated(uint256 proposalId, string _description);
 
     function openMarket(string memory _description) public {
         Proposal storage proposal = proposals[numProposals];
@@ -50,15 +53,17 @@ contract Dwin is ERC1155, Ownable {
         require(bet != Vote.NONE);
         
         Proposal storage proposal = proposals[_proposalId];
+        require(block.timestamp <= proposal.deadline - 5 minutes,"Betting period exceeded")
         uint256 tokenId = _proposalId * 2 - uint(bet);
         proposal.totalNetBets[uint(bet)] += msg.value;
+
         super._mint(msg.sender, tokenId, msg.value, "");
     }
 
     function voteOnProposal(uint256 _proposalId, Vote vote) external {
         require(vote != Vote.NONE);
         Proposal storage proposal = proposals[_proposalId];
-
+        require(block.timestamp > proposal.deadline - 5 minutes && block.timestamp <= proposal.deadline,"Voting period exceeded")
         if (vote == Vote.YAY) {
             proposal.yayVotes += 1;
         } else {
@@ -68,23 +73,24 @@ contract Dwin is ERC1155, Ownable {
 
     function executeProposal(uint256 _proposalId) external onlyOwner {
         Proposal storage proposal = proposals[_proposalId];
-
+        require(block.timestamp > proposal.deadline,"Voting still in process")
+        Vote outcomeWon;
         if (proposal.yayVotes > proposal.nayVotes) {
-            proposal.outcome = Vote.YAY; // vote passed is yes
+            outcomeWon = Vote.YAY;
         } else { 
-            proposal.outcome = Vote.NAY; // vote passed is no
+            outcomeWon = Vote.NAY; 
         }
+        proposal.outcome = outcomeWon;
     }
 
 
     /**
-     * @notice Withdraw payout based on voting outcome, sharing among winners the loosing bets
-     * @param  proposalId array of bet tokens ids withdraw payout to
+     * @notice Withdraw payout based on voting outcome, sharing among winners the loosing bets and taking the 5% fee
      */
 
-     // the param should be proposalId and you should deduce tokenId
     function withdraw(uint256 proposalId) public returns (uint256 payoutAfterFee) {
         Proposal storage proposal = proposals[proposalId];
+        require(proposal.outcome != Vote.NONE,"Proposal not resolved")
         uint tokenId = proposalId * 2 - uint(proposal.outcome);
         uint256 balance = super.balanceOf(msg.sender, tokenId);
         super._burn(msg.sender, tokenId, balance);
@@ -118,4 +124,4 @@ contract Dwin is ERC1155, Ownable {
         return proposals[proposalId].totalNetBets;
     }
 }
-
+    
