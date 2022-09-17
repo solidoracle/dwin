@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
+import "hardhat/console.sol";
+
+
 ///TODO: timeframe modifiers
 // .nvm file for package management
 
@@ -15,7 +18,6 @@ contract Dwin is ERC1155, Ownable {
     uint256 public numProposals = 1;
     uint256 public treasury;
 
-    // 
     enum Vote {
         YAY, // 0
         NAY, // 1
@@ -24,6 +26,8 @@ contract Dwin is ERC1155, Ownable {
 
     struct Proposal {
         uint256 id;
+        uint256 tokenYesId;
+        uint256 tokenNoId;
         string description;
         uint256 deadline;
         uint256 yayVotes;
@@ -34,27 +38,30 @@ contract Dwin is ERC1155, Ownable {
 
     constructor() ERC1155("DWIN"){}
 
-    // This method should be called openMarket
-    // The enum should be intialized in it relaxed state
-    // Create token Ids here
-    function createProposal(string memory _description) public returns (uint256) {
+    event ProposalCreated(uint256 proposalId, string _description);
+
+    function openMarket(string memory _description) public {
         Proposal storage proposal = proposals[numProposals];
-        proposal.deadline = block.timestamp + 5 minutes;
+        proposal.deadline = block.timestamp + 10 minutes;
         proposal.outcome = Vote.NONE;
         proposal.id = numProposals;
         proposal.description = _description;
+        proposal.tokenYesId = proposal.id * 2;
+        proposal.tokenNoId = proposal.id * 2 - 1;
+        emit ProposalCreated(proposal.id, _description);
         numProposals++;
-        return numProposals - 1;
-        // create an event for a new proposal instead of a return statement 
     }
 
     function makeBet(uint256 _proposalId, Vote bet) public payable {
         require(bet != Vote.NONE);
         Proposal storage proposal = proposals[_proposalId];
         
-        uint256 tokenId = _proposalId * 2 - (uint(bet) == 0 ? 1 : 0); 
-        // you ca just use the uint(bet) for totalNetBets
-        proposal.totalNetBets[(tokenId + 1) % 2] += msg.value;
+        // uint256 tokenId = _proposalId * 2 - (uint(bet) == 0 ? 1 : 0); 
+        console.log(_proposalId);
+        console.log(uint(bet));
+        uint256 tokenId = _proposalId * 2 - uint(bet);
+        console.log(tokenId);
+        proposal.totalNetBets[uint(bet)] += msg.value;
 
         // seems werid with wei
         super._mint(msg.sender, tokenId, msg.value, "");
@@ -72,58 +79,64 @@ contract Dwin is ERC1155, Ownable {
     }
 
     function executeProposal(uint256 _proposalId) external onlyOwner {
-    Proposal storage proposal = proposals[_proposalId];
-    Vote outcomeWon;
-    if (proposal.yayVotes > proposal.nayVotes) {
-        outcomeWon = Vote.YAY; // vote passed is yes
+        Proposal storage proposal = proposals[_proposalId];
+        Vote outcomeWon;
+        if (proposal.yayVotes > proposal.nayVotes) {
+            outcomeWon = Vote.YAY; // vote passed is yes
         } else { 
             outcomeWon = Vote.NAY; // vote passed is no
         }
-    proposal.outcome = outcomeWon;
+        proposal.outcome = outcomeWon;
     }
 
 
     /**
      * @notice Withdraw payout based on voting outcome, sharing among winners the loosing bets
-     * @param  tokenId array of bet tokens ids withdraw payout to
+     * @param  proposalId array of bet tokens ids withdraw payout to
      */
 
      // the param should be proposalId and you should deduce tokenId
-    function withdraw(uint256 tokenId) public
-        returns (uint256 payoutAfterFee) {
-            uint256 balance = super.balanceOf(msg.sender, tokenId);
+    function withdraw(uint256 proposalId) public returns (uint256 payoutAfterFee) {
+        
+        Proposal storage proposal = proposals[proposalId];
 
-            uint256 proposalId = (tokenId + 1) / 2; // l'invesrso di quello visto a riga 278
-            
-            Proposal storage proposal = proposals[proposalId];
+        uint tokenId = proposalId * 2 - uint(proposal.outcome);
 
-            super._burn(msg.sender, tokenId, balance);
+        uint256 balance = super.balanceOf(msg.sender, tokenId);
+        console.log("Balance: ", balance);
+        super._burn(msg.sender, tokenId, balance);
 
-            uint256 outcomeWinIndex = (tokenId + 1) % 2;
+        uint256 outcomeWinIndex = (tokenId) % 2;
+        console.log("Outcomewinindex: ",outcomeWinIndex);
+        if (uint256(proposal.outcome) == outcomeWinIndex) {
+            console.log("Hello");
+                uint256 totalPayout =
+                    ((proposal.totalNetBets[0] +
+                        proposal.totalNetBets[1]) * balance) /
+                    proposal.totalNetBets[outcomeWinIndex];
+                console.log("totalPayout", totalPayout);
+                uint256 fee = (totalPayout / 100) * 5;
+                payoutAfterFee = totalPayout - fee;
+                treasury += fee;
+            }
 
-            if (uint256(proposal.outcome) == outcomeWinIndex) {
-                    uint256 totalPayout =
-                        ((proposal.totalNetBets[0] +
-                            proposal.totalNetBets[1]) * balance) /
-                        proposal.totalNetBets[outcomeWinIndex];
+        (bool sent,) = msg.sender.call{value: payoutAfterFee}("");
+        require(sent, "Failed to withdraw");
+        console.log("payoutAfterFee: ", payoutAfterFee);
+        return payoutAfterFee;
+        } 
 
-                    // perhaps 5%
-                    uint256 fee = totalPayout / 100;
-                    payoutAfterFee = totalPayout - fee;
-                    treasury += fee;
-                }
-                // this should be a transfer call?
-                payable(msg.sender).call{value: payoutAfterFee}("");
-                return payoutAfterFee;
-            } 
+    function withdrawTreasury() public onlyOwner {
+        require(treasury >= 0);
 
-        function withdrawTreasury() public onlyOwner {
-            require(treasury >= 0);
-            payable(msg.sender).call{value: treasury}("");
-            treasury = 0;
-        }
+        (bool sent, ) = msg.sender.call{value: treasury}("");
+        require(sent, "Failed to withdraw");    
+
+        treasury = 0;
+    }
+
+    function getTotalNetBets(uint proposalId) public view returns (uint[2] memory) {
+        return proposals[proposalId].totalNetBets;
+    }
 }
     
-
-
-

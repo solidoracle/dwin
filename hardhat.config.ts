@@ -18,6 +18,7 @@ const config: HardhatUserConfig = {
       accounts: {
         count: 300,
       },
+      // gasPrice: 0,
     },
   },
 };

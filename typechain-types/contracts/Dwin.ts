@@ -32,11 +32,12 @@ export interface DwinInterface extends utils.Interface {
   functions: {
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
-    "createProposal(string)": FunctionFragment;
     "executeProposal(uint256)": FunctionFragment;
+    "getTotalNetBets(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "makeBet(uint256,uint8)": FunctionFragment;
     "numProposals()": FunctionFragment;
+    "openMarket(string)": FunctionFragment;
     "owner()": FunctionFragment;
     "proposals(uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
@@ -56,11 +57,12 @@ export interface DwinInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "balanceOf"
       | "balanceOfBatch"
-      | "createProposal"
       | "executeProposal"
+      | "getTotalNetBets"
       | "isApprovedForAll"
       | "makeBet"
       | "numProposals"
+      | "openMarket"
       | "owner"
       | "proposals"
       | "renounceOwnership"
@@ -85,11 +87,11 @@ export interface DwinInterface extends utils.Interface {
     values: [PromiseOrValue<string>[], PromiseOrValue<BigNumberish>[]]
   ): string;
   encodeFunctionData(
-    functionFragment: "createProposal",
-    values: [PromiseOrValue<string>]
+    functionFragment: "executeProposal",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "executeProposal",
+    functionFragment: "getTotalNetBets",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -103,6 +105,10 @@ export interface DwinInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "numProposals",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "openMarket",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -169,11 +175,11 @@ export interface DwinInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "createProposal",
+    functionFragment: "executeProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "executeProposal",
+    functionFragment: "getTotalNetBets",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -185,6 +191,7 @@ export interface DwinInterface extends utils.Interface {
     functionFragment: "numProposals",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "openMarket", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "proposals", data: BytesLike): Result;
   decodeFunctionResult(
@@ -226,6 +233,7 @@ export interface DwinInterface extends utils.Interface {
   events: {
     "ApprovalForAll(address,address,bool)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
+    "ProposalCreated(uint256,string)": EventFragment;
     "TransferBatch(address,address,address,uint256[],uint256[])": EventFragment;
     "TransferSingle(address,address,address,uint256,uint256)": EventFragment;
     "URI(string,uint256)": EventFragment;
@@ -233,6 +241,7 @@ export interface DwinInterface extends utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferBatch"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferSingle"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "URI"): EventFragment;
@@ -261,6 +270,17 @@ export type OwnershipTransferredEvent = TypedEvent<
 
 export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
+
+export interface ProposalCreatedEventObject {
+  proposalId: BigNumber;
+  _description: string;
+}
+export type ProposalCreatedEvent = TypedEvent<
+  [BigNumber, string],
+  ProposalCreatedEventObject
+>;
+
+export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
 
 export interface TransferBatchEventObject {
   operator: string;
@@ -337,15 +357,15 @@ export interface Dwin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
 
-    createProposal(
-      _description: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     executeProposal(
       _proposalId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    getTotalNetBets(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[[BigNumber, BigNumber]]>;
 
     isApprovedForAll(
       account: PromiseOrValue<string>,
@@ -361,14 +381,30 @@ export interface Dwin extends BaseContract {
 
     numProposals(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    openMarket(
+      _description: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     proposals(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, string, BigNumber, BigNumber, BigNumber, number] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        number
+      ] & {
         id: BigNumber;
+        tokenYesId: BigNumber;
+        tokenNoId: BigNumber;
         description: string;
         deadline: BigNumber;
         yayVotes: BigNumber;
@@ -429,7 +465,7 @@ export interface Dwin extends BaseContract {
     ): Promise<ContractTransaction>;
 
     withdraw(
-      tokenId: PromiseOrValue<BigNumberish>,
+      proposalId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -450,15 +486,15 @@ export interface Dwin extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
-  createProposal(
-    _description: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   executeProposal(
     _proposalId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  getTotalNetBets(
+    proposalId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<[BigNumber, BigNumber]>;
 
   isApprovedForAll(
     account: PromiseOrValue<string>,
@@ -474,14 +510,30 @@ export interface Dwin extends BaseContract {
 
   numProposals(overrides?: CallOverrides): Promise<BigNumber>;
 
+  openMarket(
+    _description: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   proposals(
     arg0: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, string, BigNumber, BigNumber, BigNumber, number] & {
+    [
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      number
+    ] & {
       id: BigNumber;
+      tokenYesId: BigNumber;
+      tokenNoId: BigNumber;
       description: string;
       deadline: BigNumber;
       yayVotes: BigNumber;
@@ -542,7 +594,7 @@ export interface Dwin extends BaseContract {
   ): Promise<ContractTransaction>;
 
   withdraw(
-    tokenId: PromiseOrValue<BigNumberish>,
+    proposalId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -563,15 +615,15 @@ export interface Dwin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
-    createProposal(
-      _description: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     executeProposal(
       _proposalId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    getTotalNetBets(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber, BigNumber]>;
 
     isApprovedForAll(
       account: PromiseOrValue<string>,
@@ -587,14 +639,30 @@ export interface Dwin extends BaseContract {
 
     numProposals(overrides?: CallOverrides): Promise<BigNumber>;
 
+    openMarket(
+      _description: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     owner(overrides?: CallOverrides): Promise<string>;
 
     proposals(
       arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, string, BigNumber, BigNumber, BigNumber, number] & {
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        number
+      ] & {
         id: BigNumber;
+        tokenYesId: BigNumber;
+        tokenNoId: BigNumber;
         description: string;
         deadline: BigNumber;
         yayVotes: BigNumber;
@@ -653,7 +721,7 @@ export interface Dwin extends BaseContract {
     ): Promise<void>;
 
     withdraw(
-      tokenId: PromiseOrValue<BigNumberish>,
+      proposalId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -680,6 +748,15 @@ export interface Dwin extends BaseContract {
       previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
     ): OwnershipTransferredEventFilter;
+
+    "ProposalCreated(uint256,string)"(
+      proposalId?: null,
+      _description?: null
+    ): ProposalCreatedEventFilter;
+    ProposalCreated(
+      proposalId?: null,
+      _description?: null
+    ): ProposalCreatedEventFilter;
 
     "TransferBatch(address,address,address,uint256[],uint256[])"(
       operator?: PromiseOrValue<string> | null,
@@ -731,14 +808,14 @@ export interface Dwin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    createProposal(
-      _description: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     executeProposal(
       _proposalId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getTotalNetBets(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     isApprovedForAll(
@@ -754,6 +831,11 @@ export interface Dwin extends BaseContract {
     ): Promise<BigNumber>;
 
     numProposals(overrides?: CallOverrides): Promise<BigNumber>;
+
+    openMarket(
+      _description: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -814,7 +896,7 @@ export interface Dwin extends BaseContract {
     ): Promise<BigNumber>;
 
     withdraw(
-      tokenId: PromiseOrValue<BigNumberish>,
+      proposalId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -836,14 +918,14 @@ export interface Dwin extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    createProposal(
-      _description: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     executeProposal(
       _proposalId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getTotalNetBets(
+      proposalId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
@@ -859,6 +941,11 @@ export interface Dwin extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     numProposals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    openMarket(
+      _description: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -919,7 +1006,7 @@ export interface Dwin extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     withdraw(
-      tokenId: PromiseOrValue<BigNumberish>,
+      proposalId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

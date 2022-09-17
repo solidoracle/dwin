@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/solidoracle/Documents/Web3/Personal Projects/dwinv1/contracts/Dwin.sol": {
-      "lastModificationDate": 1663363047115,
-      "contentHash": "24b8d2269b3af6d5b1c2714c72a10bb3",
+      "lastModificationDate": 1663423678896,
+      "contentHash": "478aab69e6784a558288eaff0b746a0c",
       "sourceName": "contracts/Dwin.sol",
       "solcConfig": {
         "version": "0.8.13",
@@ -30,7 +30,8 @@
       },
       "imports": [
         "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/token/ERC1155/ERC1155.sol"
+        "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "^0.8.0"
@@ -369,6 +370,41 @@
       ],
       "artifacts": [
         "IERC165"
+      ]
+    },
+    "/Users/solidoracle/Documents/Web3/Personal Projects/dwinv1/node_modules/hardhat/console.sol": {
+      "lastModificationDate": 1663349503210,
+      "contentHash": "4ff3cd2f6272c9a6516e9ee4f2b967d3",
+      "sourceName": "hardhat/console.sol",
+      "solcConfig": {
+        "version": "0.8.13",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">= 0.4.22 <0.9.0"
+      ],
+      "artifacts": [
+        "console"
       ]
     }
   }
