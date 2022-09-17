@@ -83,6 +83,10 @@ describe("dwin", function () {
       await expect(contract.connect(player3).withdraw(proposal.id)).to.changeEtherBalance(player2, ethers.utils.parseEther("0"))
     }
 
+    async function withdrawTreasury() {
+      expect(contract.connect(deployer).withdrawTreasury()).to.changeEtherBalance(deployer, ethers.utils.parseEther("1.5"));
+    }
+
     describe("Basic Scenario", () => {
       it("should open betting market", async function () {
         await openMarket();
@@ -112,6 +116,7 @@ describe("dwin", function () {
         await placeVotes();
         await execute();
         await withdraw();
+        await withdrawTreasury();
       });
     });
 
