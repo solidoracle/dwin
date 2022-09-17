@@ -1,8 +1,10 @@
 import * as dotenv from "dotenv";
 
 import { HardhatUserConfig } from "hardhat/config";
-import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
+import "@nomiclabs/hardhat-ethers";
+import "@nomicfoundation/hardhat-chai-matchers";
+
 
 
 dotenv.config();
@@ -18,7 +20,6 @@ const config: HardhatUserConfig = {
       accounts: {
         count: 300,
       },
-      // gasPrice: 0,
     },
   },
 };
