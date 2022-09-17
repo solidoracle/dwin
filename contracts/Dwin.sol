@@ -4,9 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
-import "hardhat/console.sol";
-
-
 ///TODO: timeframe modifiers
 // .nvm file for package management
 
@@ -57,10 +54,7 @@ contract Dwin is ERC1155, Ownable {
         Proposal storage proposal = proposals[_proposalId];
         
         // uint256 tokenId = _proposalId * 2 - (uint(bet) == 0 ? 1 : 0); 
-        console.log(_proposalId);
-        console.log(uint(bet));
         uint256 tokenId = _proposalId * 2 - uint(bet);
-        console.log(tokenId);
         proposal.totalNetBets[uint(bet)] += msg.value;
 
         // seems werid with wei
@@ -97,34 +91,26 @@ contract Dwin is ERC1155, Ownable {
 
      // the param should be proposalId and you should deduce tokenId
     function withdraw(uint256 proposalId) public returns (uint256 payoutAfterFee) {
-        
         Proposal storage proposal = proposals[proposalId];
-
         uint tokenId = proposalId * 2 - uint(proposal.outcome);
-
         uint256 balance = super.balanceOf(msg.sender, tokenId);
-        console.log("Balance: ", balance);
         super._burn(msg.sender, tokenId, balance);
 
         uint256 outcomeWinIndex = (tokenId) % 2;
-        console.log("Outcomewinindex: ",outcomeWinIndex);
         if (uint256(proposal.outcome) == outcomeWinIndex) {
-            console.log("Hello");
-                uint256 totalPayout =
-                    ((proposal.totalNetBets[0] +
-                        proposal.totalNetBets[1]) * balance) /
-                    proposal.totalNetBets[outcomeWinIndex];
-                console.log("totalPayout", totalPayout);
-                uint256 fee = (totalPayout / 100) * 5;
-                payoutAfterFee = totalPayout - fee;
-                treasury += fee;
-            }
+            uint256 totalPayout = (
+                (proposal.totalNetBets[0] + proposal.totalNetBets[1]) * balance
+            ) / proposal.totalNetBets[outcomeWinIndex];
+
+            uint256 fee = (totalPayout / 100) * 5;
+            payoutAfterFee = totalPayout - fee;
+            treasury += fee;
+        }
 
         (bool sent,) = msg.sender.call{value: payoutAfterFee}("");
         require(sent, "Failed to withdraw");
-        console.log("payoutAfterFee: ", payoutAfterFee);
         return payoutAfterFee;
-        } 
+    } 
 
     function withdrawTreasury() public onlyOwner {
         require(treasury >= 0);
