@@ -4,6 +4,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
+import { Wallet } from "ethers";
 
 
 
@@ -21,6 +22,10 @@ const config: HardhatUserConfig = {
         count: 300,
       },
     },
+    goerli: {
+      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [String(process.env.GOERLI_PRIVATE_KEY)]
+    }
   },
 };
 
