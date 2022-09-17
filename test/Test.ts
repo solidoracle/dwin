@@ -59,6 +59,9 @@ describe("dwin", function () {
       let proposal = await contract.proposals(1)
       const Yes = 0
       const No = 1
+      const blockNumber = await ethers.provider.getBlockNumber()
+      const fiveMinutesPast = (await ethers.provider.getBlock(blockNumber)).timestamp + 301
+      await ethers.provider.send("evm_mine", [fiveMinutesPast]);
 
       const vote1 = await contract.connect(deployer).voteOnProposal(proposal.id, Yes)
       const vote2 = await contract.connect(player2).voteOnProposal(proposal.id, Yes)
@@ -71,6 +74,9 @@ describe("dwin", function () {
 
     async function execute() {
       let proposal = await contract.proposals(1)
+      const blockNumber = await ethers.provider.getBlockNumber()
+      const tenMinutesPast = (await ethers.provider.getBlock(blockNumber)).timestamp + 601
+      await ethers.provider.send("evm_mine", [tenMinutesPast]);
       const execute = await contract.connect(deployer).executeProposal(proposal.id)
       proposal = await contract.proposals(1)
       expect(proposal.outcome).to.equal(0)

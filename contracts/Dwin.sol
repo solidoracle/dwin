@@ -53,7 +53,7 @@ contract Dwin is ERC1155, Ownable {
         require(bet != Vote.NONE);
         
         Proposal storage proposal = proposals[_proposalId];
-        require(block.timestamp <= proposal.deadline - 5 minutes,"Betting period exceeded")
+        require(block.timestamp <= proposal.deadline - 5 minutes,"Betting period exceeded");
         uint256 tokenId = _proposalId * 2 - uint(bet);
         proposal.totalNetBets[uint(bet)] += msg.value;
 
@@ -63,7 +63,7 @@ contract Dwin is ERC1155, Ownable {
     function voteOnProposal(uint256 _proposalId, Vote vote) external {
         require(vote != Vote.NONE);
         Proposal storage proposal = proposals[_proposalId];
-        require(block.timestamp > proposal.deadline - 5 minutes && block.timestamp <= proposal.deadline,"Voting period exceeded")
+        require(block.timestamp > proposal.deadline - 5 minutes && block.timestamp <= proposal.deadline,"Voting period exceeded");
         if (vote == Vote.YAY) {
             proposal.yayVotes += 1;
         } else {
@@ -73,8 +73,7 @@ contract Dwin is ERC1155, Ownable {
 
     function executeProposal(uint256 _proposalId) external onlyOwner {
         Proposal storage proposal = proposals[_proposalId];
-        require(block.timestamp > proposal.deadline,"Voting still in process")
-        Vote outcomeWon;
+        require(block.timestamp > proposal.deadline,"Voting still in process");
         if (proposal.yayVotes > proposal.nayVotes) {
             proposal.outcome = Vote.YAY; // vote passed is yes
         } else { 
@@ -89,7 +88,7 @@ contract Dwin is ERC1155, Ownable {
 
     function withdraw(uint256 proposalId) public returns (uint256 payoutAfterFee) {
         Proposal storage proposal = proposals[proposalId];
-        require(proposal.outcome != Vote.NONE,"Proposal not resolved")
+        require(proposal.outcome != Vote.NONE,"Proposal not resolved");
         uint tokenId = proposalId * 2 - uint(proposal.outcome);
         uint256 balance = super.balanceOf(msg.sender, tokenId);
         super._burn(msg.sender, tokenId, balance);
