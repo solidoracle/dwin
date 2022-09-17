@@ -1,11 +1,10 @@
 import { describe } from 'mocha';
 import { expect, assert } from 'chai';
 import { ethers } from 'hardhat';
-import { BigNumber } from 'ethers';
 import { Dwin } from "../typechain-types";
 
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { helpers } from "@nomiclabs/hardhat-ethers";
+import { setBalance } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("dwin", function () {
     let contract: Dwin;
@@ -13,28 +12,11 @@ describe("dwin", function () {
     let player2: SignerWithAddress;
     let player3: SignerWithAddress;
 
-    async function dropBalance() {
-      let receiverAddress = '0x0000000000000000000000000000000000000000'
-      let tx = {
-        to: receiverAddress,
-        // Convert currency unit from ether to wei
-        value: ethers.utils.parseEther("1000000")
-      }
-      
-      deployer.sendTransaction(tx)
-      .then((txObj) => {
-          console.log('txHash', txObj.hash)
-          // => 0x9c172314a693b94853b49dc057cf1cb8e529f29ce0272f451eea8f5741aa9b58
-          // A transaction result can be checked in a etherscan with a transaction hash which can be obtained here.
-      })
-      console.log("TRANSACTION COMPLETED")
-    }
-
     beforeEach(async () => {
       const Dwin = await ethers.getContractFactory("Dwin");
       [deployer, player2, player3] = await ethers.getSigners()
       contract = await Dwin.connect(deployer).deploy();
-      dropBalance();
+      setBalance(deployer.address, ethers.utils.parseEther("100"));
     });
   
     async function openMarket() {
@@ -94,39 +76,12 @@ describe("dwin", function () {
       expect(proposal.outcome).to.equal(0)
     }
 
-
     async function withdraw() {
       let proposal = await contract.proposals(1)
-
-
-      const deployerBalanceBefore: any = await deployer.getBalance()
-      console.log("bal before", deployerBalanceBefore)
-      const player2BalanceBefore: any = await player2.getBalance()
-      const player3BalanceBefore: any = await player3.getBalance()
-
-      const withdraw1 = await contract.connect(deployer).withdraw(proposal.id)
-      const receipt = await withdraw1.wait()
-      const gasUsed: any = receipt.gasUsed.mul(receipt.effectiveGasPrice)
-      console.log("gas used:", gasUsed)
-      const withdraw2 = await contract.connect(player2).withdraw(proposal.id)
-      const withdraw3 = await contract.connect(player3).withdraw(proposal.id)
-
-      const deployerBalanceAfter: any = await deployer.getBalance()
-      console.log("bal after", deployerBalanceAfter)
-      
-      const player2BalanceAfter: any = await player2.getBalance()
-      const player3BalanceAfter: any = await player3.getBalance()
-
-      console.log("balance before", deployerBalanceBefore)
-      console.log("balance after", deployerBalanceAfter)
-      console.log("difference", (deployerBalanceAfter - deployerBalanceBefore) - parseInt(gasUsed))
-      console.log("difference2", deployerBalanceBefore - deployerBalanceAfter)
-      console.log("difference3", (deployerBalanceAfter + gasUsed) - deployerBalanceBefore)
-      //expect(deployerBalanceAfter - deployerBalanceBefore).to.equal(1425)
-      //expect(player2Bal).to.equal(1000)
-      //expect(player3Bal).to.equal(1000)
+      await expect(contract.connect(deployer).withdraw(proposal.id)).to.changeEtherBalance(deployer, ethers.utils.parseEther("14.25"))
+      await expect(contract.connect(player2).withdraw(proposal.id)).to.changeEtherBalance(player2, ethers.utils.parseEther("14.25"))
+      await expect(contract.connect(player3).withdraw(proposal.id)).to.changeEtherBalance(player2, ethers.utils.parseEther("0"))
     }
-
 
     describe("Basic Scenario", () => {
       it("should open betting market", async function () {
@@ -136,7 +91,6 @@ describe("dwin", function () {
       it("should place bets", async function () {
         await openMarket();
         await placeBets();
-
       });
 
       it("should vote", async function () {
@@ -150,9 +104,6 @@ describe("dwin", function () {
         await placeBets();
         await placeVotes();
         await execute();
-
-
-        
       });
 
       it("should withdraw", async function () {
@@ -161,13 +112,7 @@ describe("dwin", function () {
         await placeVotes();
         await execute();
         await withdraw();
-
-
-
       });
-
-
-      
     });
 
     it("should return proposal zero through automatic getter", async function() {
