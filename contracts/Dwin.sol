@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 ///TODO: timeframe modifiers
+// .nvm file for package management
 
 contract Dwin is ERC1155, Ownable {
  
@@ -14,6 +15,7 @@ contract Dwin is ERC1155, Ownable {
     uint256 public numProposals = 1;
     uint256 public treasury;
 
+    // 
     enum Vote {
         YAY, // 0
         NAY, // 1
@@ -32,6 +34,9 @@ contract Dwin is ERC1155, Ownable {
 
     constructor() ERC1155("DWIN"){}
 
+    // This method should be called openMarket
+    // The enum should be intialized in it relaxed state
+    // Create token Ids here
     function createProposal(string memory _description) public returns (uint256) {
         Proposal storage proposal = proposals[numProposals];
         proposal.deadline = block.timestamp + 5 minutes;
@@ -40,6 +45,7 @@ contract Dwin is ERC1155, Ownable {
         proposal.description = _description;
         numProposals++;
         return numProposals - 1;
+        // create an event for a new proposal instead of a return statement 
     }
 
     function makeBet(uint256 _proposalId, Vote bet) public payable {
@@ -47,8 +53,10 @@ contract Dwin is ERC1155, Ownable {
         Proposal storage proposal = proposals[_proposalId];
         
         uint256 tokenId = _proposalId * 2 - (uint(bet) == 0 ? 1 : 0); 
+        // you ca just use the uint(bet) for totalNetBets
         proposal.totalNetBets[(tokenId + 1) % 2] += msg.value;
 
+        // seems werid with wei
         super._mint(msg.sender, tokenId, msg.value, "");
     }
 
@@ -79,6 +87,8 @@ contract Dwin is ERC1155, Ownable {
      * @notice Withdraw payout based on voting outcome, sharing among winners the loosing bets
      * @param  tokenId array of bet tokens ids withdraw payout to
      */
+
+     // the param should be proposalId and you should deduce tokenId
     function withdraw(uint256 tokenId) public
         returns (uint256 payoutAfterFee) {
             uint256 balance = super.balanceOf(msg.sender, tokenId);
@@ -97,10 +107,12 @@ contract Dwin is ERC1155, Ownable {
                             proposal.totalNetBets[1]) * balance) /
                         proposal.totalNetBets[outcomeWinIndex];
 
+                    // perhaps 5%
                     uint256 fee = totalPayout / 100;
                     payoutAfterFee = totalPayout - fee;
                     treasury += fee;
                 }
+                // this should be a transfer call?
                 payable(msg.sender).call{value: payoutAfterFee}("");
                 return payoutAfterFee;
             } 
