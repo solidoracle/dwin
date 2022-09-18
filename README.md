@@ -1,4 +1,5 @@
 # Dwin
+Betting market for dao proposals that uses greed to do good by allowing winners to donate a portion of their wins to social good DAOs that inherently track their initiatives on chain
 
 ## Install and test
 
