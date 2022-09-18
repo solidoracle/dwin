@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
-    /**
-     * @title dwin
-     * @notice An ERC1155 contract that generates a betting market for DAO voting
-     */
+/**
+ * @title dwin
+ * @notice An ERC1155 contract that generates a betting market for DAO voting
+ */
 
 contract Dwin is ERC1155, Ownable {
  
