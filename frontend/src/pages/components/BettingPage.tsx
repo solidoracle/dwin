@@ -35,7 +35,14 @@ export function BettingPage() {
               value={description}
             />
           </FormControl>
-          <Button> CREATE </Button>
+          <Button
+            w={"20%"}
+            borderRadius={"7px"}
+            bgGradient="linear-gradient(35deg, rgba(11,10,81,1) 0%, rgba(172,84,255,1) 100%)
+            "
+          >
+            Create
+          </Button>
         </VStack>
       </VStack>
     </Flex>
