@@ -3,7 +3,7 @@ import { Bets } from "./Bets";
 
 export function DashboardPage() {
   return (
-    <Flex width="100%" justify="center">
+    <Flex width="100%" justify="center" borderColor={"white"} border={"1px"}>
       <Flex
         w="35%"
         mt="50px"
