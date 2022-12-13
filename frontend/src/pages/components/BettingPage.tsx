@@ -1,5 +1,9 @@
-import { Text } from "@chakra-ui/react";
+import { Flex, Text } from "@chakra-ui/react";
 
 export function BettingPage() {
-  return <Text>BETTING PAGE</Text>;
+  return (
+    <Flex p={"10%"}>
+      <Text>CREATE BET PAGE</Text>
+    </Flex>
+  );
 }

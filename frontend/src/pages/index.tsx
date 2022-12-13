@@ -38,16 +38,16 @@ export const RoutesPathMap: { [key: number]: string } = {
 export function Pages() {
   const routes = [
     {
-      path: RoutesPathMap[RouteKey.BETTING_PAGE],
-      element: <BettingPage />,
-      label: "Betting",
-      tooltip: "Bet on dao proposal",
-    },
-    {
       path: RoutesPathMap[RouteKey.DASHBOARD_PAGE],
       element: <DashboardPage />,
       label: "Dashboard",
       tooltip: "View voting and betting stats",
+    },
+    {
+      path: RoutesPathMap[RouteKey.BETTING_PAGE],
+      element: <BettingPage />,
+      label: "Create Bet",
+      tooltip: "Bet on dao proposal",
     },
   ];
 
@@ -57,7 +57,7 @@ export function Pages() {
     <Router>
       <Flex direction="column" height="100vh" overflow="hidden">
         <Navbar>
-          <Flex justifyContent="space-between" width="100%">
+          <Flex width="100%">
             {routes.map((route) => (
               <Tooltip
                 isDisabled={!route.tooltip}
@@ -66,25 +66,21 @@ export function Pages() {
                 key={route.path}
               >
                 <Link
+                  color={"white"}
                   textDecor="bold"
                   as={NavLink}
                   mx={1.5}
-                  bgColor={"white"}
                   _activeLink={{
-                    color: "brand.950",
-                    bgColor: "blue",
+                    border: "1px",
                   }}
-                  _hover={{ textDecor: "none", color: "brand.700" }}
                   to={route.path}
                 >
-                  <Box px={5} py={2.5}>
-                    {route.label}
-                  </Box>
+                  <Box p={2.5}>{route.label}</Box>
                 </Link>
               </Tooltip>
             ))}
           </Flex>
-          <Flex my={3}>
+          <Flex>
             <ConnectWalletButton />
           </Flex>
         </Navbar>

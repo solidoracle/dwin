@@ -1,6 +1,7 @@
-import { ChakraProvider, theme } from "@chakra-ui/react";
+import { ChakraProvider } from "@chakra-ui/react";
 import { Pages } from "./pages";
 import { WalletProvider } from "./WalletProvider";
+import { theme } from "./theme";
 import "@rainbow-me/rainbowkit/styles.css";
 
 export const App = () => {

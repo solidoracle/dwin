@@ -7,6 +7,7 @@ import {
 } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { infuraProvider } from "wagmi/providers/infura";
+import { walletConnectionTheme } from "./theme/walletConnectionTheme";
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const { chains, provider } = configureChains(
@@ -35,6 +36,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider
         chains={chains}
+        theme={walletConnectionTheme}
         showRecentTransactions={true}
         appInfo={{
           appName: "DWIN",
