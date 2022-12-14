@@ -55,7 +55,7 @@ export function Pages() {
 
   return (
     <Router>
-      <Flex direction="column" height="100vh" overflow="hidden">
+      <Flex direction="column" height="100vh">
         <Navbar>
           <Flex width="100%">
             {routes.map((route) => (
