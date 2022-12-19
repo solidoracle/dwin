@@ -5,14 +5,14 @@ import { useNavigate } from "react-router-dom";
 export function Navbar({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
-  function handleClick() {
-    navigate("/");
-  }
+  // function handleClick() {
+  //   navigate("/");
+  // }
 
   return (
     <Flex minHeight="70px" alignItems="center" px={6}>
       <Image
-        onClick={handleClick}
+        // onClick={handleClick}
         src={require("../../assets/images/dwin-logo.png")}
         cursor="pointer"
         mr={6}

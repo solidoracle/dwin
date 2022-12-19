@@ -22,7 +22,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   );
 
   const { connectors } = getDefaultWallets({
-    appName: "Sarcophagus v2",
+    appName: "DWIN",
     chains,
   });
 

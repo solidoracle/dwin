@@ -1,17 +1,4 @@
-import {
-  Text,
-  Grid,
-  Card,
-  CardHeader,
-  Heading,
-  CardBody,
-  Stack,
-  StackDivider,
-  Link,
-  Box,
-  Flex,
-  Tooltip,
-} from "@chakra-ui/react";
+import { Link, Box, Flex, Tooltip } from "@chakra-ui/react";
 import {
   Navigate,
   NavLink,
@@ -51,6 +38,7 @@ export function Pages() {
     },
   ];
 
+  /// MAYBE HERE WE NEED TO ADD CONNECT WALLET PAGE
   const { isConnected } = useAccount();
 
   return (
