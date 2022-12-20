@@ -9,7 +9,6 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-
 import { BettingCard } from "./BettingCard";
 import { useLoadProposals } from "../hooks/useLoadProposal";
 import { WalletDisconnectPage } from "./WalletDisconnectPage";
@@ -23,10 +22,6 @@ export function BettingPage() {
     const value = e.target.value;
     setDescription(value);
   }
-
-  // useEffect(() => {
-  //   // fetchAllProposals();
-  // }, []);
 
   return (
     <Flex p={"10%"} w={"50%"}>

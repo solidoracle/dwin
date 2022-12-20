@@ -5,8 +5,14 @@ import {
   Button,
   UnorderedList,
   ListItem,
-  Input,
   HStack,
+  NumberInput,
+  NumberInputField,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInputStepper,
+  InputRightElement,
+  InputGroup,
 } from "@chakra-ui/react";
 import { useState } from "react";
 
@@ -76,7 +82,12 @@ export function BettingCard(proposal: any, index: any) {
             <Flex p="15px" w="100%" justifyContent={"space-between"}>
               <VStack align={"left"} flex="1">
                 <Text fontSize="m">BET AMOUT</Text>
-                <Input w="50%" />
+                <InputGroup>
+                  <NumberInput min={0}>
+                    <NumberInputField />
+                    <InputRightElement>ETH</InputRightElement>
+                  </NumberInput>
+                </InputGroup>
                 <HStack>
                   <Button
                     w="75px"

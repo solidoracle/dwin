@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useProvider, useSigner } from "wagmi";
 import { DWIN_ABI, DWIN_CONTRACT_ADDRESS } from "../../constants";
 import { Contract } from "ethers";
@@ -18,7 +18,7 @@ export function useLoadProposals() {
     return new Contract(DWIN_CONTRACT_ADDRESS, DWIN_ABI, providerOrSigner);
   };
 
-  const getNumProposals = async () => {
+  const getNumProposals = useCallback(async () => {
     try {
       const contract = getDwinContractInstance(provider);
       const numProposals: number = await contract.numProposals();
@@ -26,28 +26,28 @@ export function useLoadProposals() {
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [provider]);
 
-  const fetchProposalById = async (id: number) => {
-    try {
-      const daoContract = getDwinContractInstance(provider);
-      const proposal = await daoContract.proposals(id);
-      const parsedProposal = {
-        proposalId: id,
-        description: proposal.description,
-        deadline: new Date(parseInt(proposal.deadline.toString()) * 1000),
-        yayVotes: proposal.yayVotes.toString(),
-        nayVotes: proposal.nayVotes.toString(),
-        outcome: proposal.outcome.toString(),
-      };
-      return parsedProposal;
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const fetchAllProposals = async () => {
+  const fetchAllProposals = useCallback(async () => {
     await getNumProposals();
+
+    const fetchProposalById = async (id: number) => {
+      try {
+        const daoContract = getDwinContractInstance(provider);
+        const proposal = await daoContract.proposals(id);
+        const parsedProposal = {
+          proposalId: id,
+          description: proposal.description,
+          deadline: new Date(parseInt(proposal.deadline.toString()) * 1000),
+          yayVotes: proposal.yayVotes.toString(),
+          nayVotes: proposal.nayVotes.toString(),
+          outcome: proposal.outcome.toString(),
+        };
+        return parsedProposal;
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     try {
       const proposals: any = [];
@@ -57,15 +57,13 @@ export function useLoadProposals() {
         proposals.push(proposal);
       }
 
-      setProposals(proposals);
+      setProposals(proposals.reverse());
       console.log("proposals set");
       console.log(proposals);
-
-      return proposals;
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [getNumProposals, numProposals, provider]);
 
   const createProposal = async (description: string) => {
     try {
@@ -82,6 +80,10 @@ export function useLoadProposals() {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    proposals.length === 0 && fetchAllProposals();
+  }, [fetchAllProposals, proposals.length]);
 
   return {
     proposals,
