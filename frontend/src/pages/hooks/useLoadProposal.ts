@@ -90,5 +90,7 @@ export function useLoadProposals() {
     fetchAllProposals,
     getNumProposals,
     createProposal,
+    signer,
+    getDwinContractInstance,
   };
 }

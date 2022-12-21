@@ -8,20 +8,54 @@ import {
   HStack,
   NumberInput,
   NumberInputField,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInputStepper,
   InputRightElement,
   InputGroup,
 } from "@chakra-ui/react";
+import { BigNumber, ethers } from "ethers";
+import { parseEther } from "ethers/lib/utils";
 import { useState } from "react";
+import { useLoadProposals } from "../hooks/useLoadProposal";
 
 export function BettingCard(proposal: any, index: any) {
   const [open, setOpen] = useState(false);
+  const [betAmount, setBetAmount] = useState("0");
+  const { signer, getDwinContractInstance, fetchAllProposals } =
+    useLoadProposals();
 
   function toggleOpen() {
     setOpen((prev) => !prev);
   }
+
+  const voteOnProposal = async (proposalId: number, _vote: any) => {
+    try {
+      const dwinContract = getDwinContractInstance(signer);
+      let vote = _vote === "YAY" ? 0 : 1;
+      const txn = await dwinContract.voteOnProposal(proposalId, vote);
+      await txn.wait();
+      await fetchAllProposals();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const betOnProposal = async (
+    proposalId: any,
+    _vote: any,
+    _amount: string
+  ) => {
+    try {
+      const dwinContract = getDwinContractInstance(signer);
+
+      let vote = _vote === "YAY" ? 0 : 1;
+      const txn = await dwinContract.makeBet(proposalId, vote, {
+        value: ethers.utils.parseEther(_amount),
+      });
+      await txn.wait();
+      await fetchAllProposals();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Flex
@@ -73,7 +107,8 @@ export function BettingCard(proposal: any, index: any) {
                   <ListItem>yayVotes: {proposal.proposal.yayVotes}</ListItem>
                   <ListItem>nayVotes: {proposal.proposal.nayVotes}</ListItem>
                   <ListItem>
-                    totalNetBets: {proposal.proposal.totalNetBets}
+                    totalNetBets:{" "}
+                    {proposal.proposal.totalNetBets?.map((bet: number) => bet)}
                   </ListItem>
                   <ListItem>outcome: {proposal.proposal.outcome}</ListItem>
                 </UnorderedList>
@@ -83,7 +118,15 @@ export function BettingCard(proposal: any, index: any) {
               <VStack align={"left"} flex="1">
                 <Text fontSize="m">BET AMOUT</Text>
                 <InputGroup>
-                  <NumberInput min={0}>
+                  <NumberInput
+                    min={0}
+                    onChange={(
+                      valueAsString: string,
+                      valueAsNumber: number
+                    ) => {
+                      setBetAmount(valueAsString);
+                    }}
+                  >
                     <NumberInputField />
                     <InputRightElement>ETH</InputRightElement>
                   </NumberInput>
@@ -94,6 +137,13 @@ export function BettingCard(proposal: any, index: any) {
                     backgroundColor="#AC54FF"
                     fontSize="xs"
                     h="20px"
+                    onClick={() =>
+                      betOnProposal(
+                        proposal.proposal.proposalId,
+                        "YAY",
+                        betAmount
+                      )
+                    }
                   >
                     BET ON YES
                   </Button>
@@ -102,6 +152,13 @@ export function BettingCard(proposal: any, index: any) {
                     backgroundColor="#AC54FF"
                     fontSize="xs"
                     h="20px"
+                    onClick={() =>
+                      betOnProposal(
+                        proposal.proposal.proposalId,
+                        "NAY",
+                        betAmount
+                      )
+                    }
                   >
                     BET ON NO
                   </Button>
@@ -115,6 +172,9 @@ export function BettingCard(proposal: any, index: any) {
                   backgroundColor="#AC54FF"
                   fontSize="xs"
                   h="20px"
+                  onClick={() =>
+                    voteOnProposal(proposal.proposal.proposalId, "YAY")
+                  }
                 >
                   VOTE YES
                 </Button>
@@ -123,6 +183,9 @@ export function BettingCard(proposal: any, index: any) {
                   backgroundColor="#AC54FF"
                   fontSize="xs"
                   h="20px"
+                  onClick={() =>
+                    voteOnProposal(proposal.proposal.proposalId, "NAY")
+                  }
                 >
                   VOTE NO
                 </Button>
@@ -130,6 +193,9 @@ export function BettingCard(proposal: any, index: any) {
             </Flex>
             <Button w="75px" backgroundColor="#AC54FF" fontSize="xs" h="20px">
               EXECUTE
+            </Button>
+            <Button w="75px" backgroundColor="#AC54FF" fontSize="xs" h="20px">
+              WITHDRAW
             </Button>
           </>
         )}

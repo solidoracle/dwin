@@ -65,7 +65,7 @@ contract Dwin is ERC1155, Ownable {
     function voteOnProposal(uint256 _proposalId, Vote vote) external {
         require(vote != Vote.NONE);
         Proposal storage proposal = proposals[_proposalId];
-        require(block.timestamp > proposal.deadline - 5 minutes && block.timestamp <= proposal.deadline,"Voting period exceeded");
+        require(block.timestamp > proposal.deadline - 5 minutes && block.timestamp <= proposal.deadline,"Voting period not started/expired");
         if (vote == Vote.YAY) {
             proposal.yayVotes += 1;
         } else {
