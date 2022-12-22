@@ -48,6 +48,8 @@ describe('dwin', function () {
     let player2Bal = await contract.balanceOf(player2.address, proposal.tokenYesId);
     let player3Bal = await contract.balanceOf(player3.address, proposal.tokenNoId);
 
+    console.log(proposal);
+
     expect(player1Bal).to.equal(ethers.utils.parseEther('10'));
     expect(player2Bal).to.equal(ethers.utils.parseEther('10'));
     expect(player3Bal).to.equal(ethers.utils.parseEther('10'));
