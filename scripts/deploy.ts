@@ -5,7 +5,7 @@ async function main() {
   const dwin = await Dwin.deploy();
   await dwin.deployed();
 
-  console.log('CryptoDevsDAO deployed to: ', dwin.address);
+  console.log('dwin deployed to: ', dwin.address);
 }
 
 main()

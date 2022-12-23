@@ -16,6 +16,7 @@ contract Dwin is ERC1155, Ownable {
     uint256 public treasury;
     uint256 public numProposals = 1;
     mapping(uint256 => Proposal) public proposals;
+    mapping(uint256 => mapping(Vote => uint256)) public totalBets;
 
     event ProposalCreated(uint256 proposalId, string _description);
     
@@ -33,7 +34,6 @@ contract Dwin is ERC1155, Ownable {
         uint256 deadline;
         uint256 yayVotes;
         uint256 nayVotes;
-        uint256[2] totalNetBets;
         Vote outcome;
     }
 
@@ -57,9 +57,15 @@ contract Dwin is ERC1155, Ownable {
         Proposal storage proposal = proposals[_proposalId];
         require(block.timestamp <= proposal.deadline - 5 minutes,"Betting period exceeded");
         uint256 tokenId = _proposalId * 2 - uint(bet);
-        proposal.totalNetBets[uint(bet)] += msg.value;
-
+        // if(bet == Vote.YAY) {
+        //     proposal.totalNetBetsYes += msg.value;
+        // }
+        // if(bet == Vote.NAY) {
+        //     proposal.totalNetBetsNo += msg.value;
+        // }
+        totalBets[_proposalId][bet] += msg.value;
         super._mint(msg.sender, tokenId, msg.value, "");
+
     }
 
     function voteOnProposal(uint256 _proposalId, Vote vote) external {
@@ -88,18 +94,21 @@ contract Dwin is ERC1155, Ownable {
      * @notice Withdraw payout based on voting outcome, sharing among winners the loosing bets and taking the 5% fee
      */
 
-    function withdraw(uint256 proposalId) public returns (uint256 payoutAfterFee) {
-        Proposal storage proposal = proposals[proposalId];
+    function withdraw(uint256 _proposalId) public returns (uint256 payoutAfterFee) {
+        Proposal storage proposal = proposals[_proposalId];
         require(proposal.outcome != Vote.NONE,"Proposal not resolved");
-        uint tokenId = proposalId * 2 - uint(proposal.outcome);
+        uint tokenId = _proposalId * 2 - uint(proposal.outcome);
         uint256 balance = super.balanceOf(msg.sender, tokenId);
         super._burn(msg.sender, tokenId, balance);
 
         uint256 outcomeWinIndex = (tokenId) % 2;
         if (uint256(proposal.outcome) == outcomeWinIndex) {
-            uint256 totalPayout = (
-                (proposal.totalNetBets[0] + proposal.totalNetBets[1]) * balance
-            ) / proposal.totalNetBets[outcomeWinIndex];
+
+            console.log('denom:',totalBets[_proposalId][Vote(outcomeWinIndex)]);
+            uint totalPayout = (
+                (totalBets[_proposalId][Vote.YAY] + totalBets[_proposalId][Vote.NAY]) * balance
+            ) / totalBets[_proposalId][Vote(outcomeWinIndex)];
+            
 
             uint256 fee = (totalPayout / 100) * 5;
             payoutAfterFee = totalPayout - fee;
@@ -119,9 +128,4 @@ contract Dwin is ERC1155, Ownable {
 
         treasury = 0;
     }
-
-    function getTotalNetBets(uint proposalId) public view returns (uint[2] memory) {
-        return proposals[proposalId].totalNetBets;
-    }
 }
-

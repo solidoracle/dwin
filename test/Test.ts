@@ -48,10 +48,11 @@ describe('dwin', function () {
     let player2Bal = await contract.balanceOf(player2.address, proposal.tokenYesId);
     let player3Bal = await contract.balanceOf(player3.address, proposal.tokenNoId);
 
-    let totalNetBets = await contract.getTotalNetBets(1);
+    let totalBetsYes = await contract.totalBets(1, 0);
+    let totalBetsNo = await contract.totalBets(1, 1);
 
-    expect(totalNetBets[0]).to.equal(ethers.utils.parseEther('20'));
-    expect(totalNetBets[1]).to.equal(ethers.utils.parseEther('10'));
+    expect(totalBetsYes).to.equal(ethers.utils.parseEther('20'));
+    expect(totalBetsNo).to.equal(ethers.utils.parseEther('10'));
 
     expect(player1Bal).to.equal(ethers.utils.parseEther('10'));
     expect(player2Bal).to.equal(ethers.utils.parseEther('10'));
@@ -143,13 +144,11 @@ describe('dwin', function () {
 
   it('should return proposal zero through automatic getter', async function () {
     let proposal = await contract.proposals(0);
+    let totalBetsYes = await contract.totalBets(0, 0);
+    let totalBetsNo = await contract.totalBets(0, 1);
     assert(proposal.id.eq(0), 'proposalId');
     assert(proposal.deadline.eq(0), 'deadline');
-    assert(proposal.yayVotes.eq(0), 'yayVotes');
-    assert(proposal.nayVotes.eq(0), 'nayVotes');
-
-    let totalNetBets = await contract.getTotalNetBets(0);
-    assert(totalNetBets[0].eq(0));
-    assert(totalNetBets[1].eq(0));
+    assert(totalBetsYes.eq(0));
+    assert(totalBetsNo.eq(0));
   });
 });
